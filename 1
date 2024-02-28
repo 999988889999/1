@@ -574,3 +574,104 @@ int main() {
     return 0;
 }
 
+
+21......digit or not
+
+%{
+#include <stdio.h>
+int yywrap();
+%}
+
+DIGIT [0-9]
+
+%%
+{DIGIT}+    { printf("Input is a digit: %s\n", yytext); }
+.           { printf("Input is not a digit: %s\n", yytext); }
+%%
+
+int main() {
+    yylex();
+    return 0;
+}
+
+int yywrap() {
+    return 1;
+}
+
+22......ignore coments
+
+%{
+// Header section: Definitions and declarations
+#include <stdio.h>
+
+int charCount = 0;
+int lineCount = 0;
+int wordCount = 0;
+%}
+
+// Regular expressions and corresponding actions
+%%
+[ \t]+          ; // Ignore spaces and tabs
+\n              { charCount++; lineCount++; } // Count newlines
+\/\*[^*]*\*+([^/*][^*]*\*+)*\/   ; // Ignore multiline comments
+\/\/[^\n]*      ; // Ignore single-line comments
+[a-zA-Z_][a-zA-Z0-9_]*  { wordCount++; } // Count identifiers
+.               { charCount++; } // Count other characters
+%%
+
+// User-defined functions
+void printCounts() {
+    printf("Number of characters: %d\n", charCount);
+    printf("Number of lines: %d\n", lineCount);
+    printf("Number of words: %d\n", wordCount);
+}
+
+// Main function
+int main(int argc, char* argv[]) {
+    // Flex-specific initialization
+    yyin = fopen(argv[1], "r");
+    // Error handling for file opening
+    if(yyin == NULL) {
+        fprintf(stderr, "Error: Unable to open file %s\n", argv[1]);
+        return 1;
+    }
+
+    // Lexical analysis
+    yylex();
+
+    // Print counts
+    printCounts();
+
+    // Close file
+    fclose(yyin);
+
+    return 0;
+}
+
+
+23...white space
+
+%option noyywrap
+
+%{
+#include <stdio.h>
+int whitespace_count = 0;
+int newline_count = 0;
+%}
+
+%%
+
+[ \t]      { whitespace_count++; }
+\n         { newline_count++; }
+
+.          ; // ignore any other characters
+
+%%
+
+int main() {
+    yylex();
+    printf("Number of whitespace characters: %d\n", whitespace_count);
+    printf("Number of newline characters: %d\n", newline_count);
+    return 0;
+}
+
